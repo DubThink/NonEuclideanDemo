@@ -11,6 +11,7 @@ AcppfpsProjectile::AcppfpsProjectile()
 	CollisionComp->InitSphereRadius(5.0f);
 	CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");
 	CollisionComp->OnComponentHit.AddDynamic(this, &AcppfpsProjectile::OnHit);		// set up a notification for when this component hits something blocking
+	CollisionComp->SetGenerateOverlapEvents(true);
 
 	// Players can't walk on it
 	CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));

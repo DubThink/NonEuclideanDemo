@@ -28,6 +28,6 @@ public:
 	// overlap begin function
 	UFUNCTION()
 	void OnTriggerOverlapBegin(class UPrimitiveComponent* Overlapped, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	class ABuiltPortal* endPortal;
 };

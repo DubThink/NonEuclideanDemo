@@ -4,7 +4,10 @@
 #include "ConstructorHelpers.h"
 #include "Components/ActorComponent.h"
 #include "Components/BoxComponent.h"
+#include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include "cppfpsCharacter.h"
 #include "DubDebug.h"
 // Sets default values
 ABuiltPortal::ABuiltPortal()
@@ -13,7 +16,7 @@ ABuiltPortal::ABuiltPortal()
 	PrimaryActorTick.bCanEverTick = true;
 	UBoxComponent* BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("RootComponent"));
 	RootComponent = BoxComponent;
-	BoxComponent->InitBoxExtent(FVector(40.0f,40.f,40.f));
+	BoxComponent->InitBoxExtent(FVector(90.0f,40.f,180.f));
 	BoxComponent->SetCollisionProfileName(TEXT("Trigger"));
 	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ABuiltPortal::OnTriggerOverlapBegin);
 
@@ -43,9 +46,18 @@ void ABuiltPortal::Tick(float DeltaTime)
 
 }
 
-void ABuiltPortal::OnTriggerOverlapBegin(class UPrimitiveComponent* Overlapped, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult){
-	print("Overlap Begin");
+void ABuiltPortal::OnTriggerOverlapBegin(class UPrimitiveComponent* Overlapped, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult) {
 	printFString("Other Actor = %s", *OtherActor->GetName());
+	if (OtherActor->GetClass()->IsChildOf(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->GetClass())
+		&& endPortal->IsValidLowLevel()) {
+		print("PC");
+		AcppfpsCharacter* pc = (AcppfpsCharacter*)OtherActor;
+		FTransform dest_transform = endPortal->GetTransform();
+		dest_transform.AddToTranslation(pc->GetTransform().GetTranslation() - GetTransform().GetTranslation());
+		printFString("dest_transform = %s", *dest_transform.ToHumanReadableString());
+		pc->TeleportTo(dest_transform.GetTranslation(), dest_transform.GetRotation().Rotator());
+	}
+
 }
 
 
