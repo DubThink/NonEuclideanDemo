@@ -24,19 +24,20 @@ ATestCharacter1::ATestCharacter1(const FObjectInitializer& ObjectInitializer)
 void ATestCharacter1::BeginPlay()
 {
 	Super::BeginPlay();
-	//SetActorRotation(FRotator(45, 0, 45));
+	SetActorRotation(FRotator(0, 45, 0));
 }
 
 // Called every frame
 void ATestCharacter1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	auto a = GetOwner();
 	//AddMovementInput(FVector(-1.0f,0.0f,1.0f), 1.0f);
 	//AddActorWorldRotation(FQuat(GetActorUpVector(), 0.001f));
 	print(GetActorUpVector().ToCompactString());
 	//print("AAA");
 	//AddActorLocalRotation(FRotator(0, 0.2f, 0));
-
+	//BaseRotationOffset
 
 }
 
@@ -65,7 +66,8 @@ void ATestCharacter1::testYaw(float d) {
 	/*print(x.GetAxisX().ToCompactString());
 	print(x.GetAxisY().ToCompactString());
 	print(x.GetAxisZ().ToCompactString());*/
-	AddActorWorldRotation(FRotator(0, d, 0));
+	FRotator rotator = FRotator(0, 20, 0);
+	//SetActorRotation(rotator);
 
 }
 void ATestCharacter1::MoveForward(float amt) {

@@ -45,7 +45,6 @@ FVector UEscherCharacterMovementComponent::ConstrainInputAcceleration(const FVec
 	//{
 	//	return FVector(InputAcceleration.X, InputAcceleration.Y, 0.f);
 	//}
-
 	return InputAcceleration;
 }
 
@@ -147,7 +146,7 @@ void UEscherCharacterMovementComponent::PhysFalling(float deltaTime, int32 Itera
 		// Move
 		FHitResult Hit(1.f);
 		FVector Adjusted = 0.5f*(OldVelocity + Velocity) * timeTick;
-		SafeMoveUpdatedComponent(Adjusted, PawnRotation, true, Hit);
+		SafeMoveUpdatedComponent(Adjusted, PawnRotation*FQuat(0,0,1,0.02f), true, Hit);
 
 		if (!HasValidData())
 		{
