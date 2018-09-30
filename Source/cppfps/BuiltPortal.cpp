@@ -4,6 +4,7 @@
 #include "ConstructorHelpers.h"
 #include "Components/ActorComponent.h"
 #include "Components/BoxComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
@@ -47,6 +48,7 @@ void ABuiltPortal::Tick(float DeltaTime)
 }
 
 void ABuiltPortal::OnTriggerOverlapBegin(class UPrimitiveComponent* Overlapped, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult) {
+	printFString("Me = %s", *GetName());
 	printFString("Other Actor = %s", *OtherActor->GetName());
 	if (OtherActor->GetClass()->IsChildOf(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->GetClass())
 		&& endPortal->IsValidLowLevel()) {
@@ -54,8 +56,17 @@ void ABuiltPortal::OnTriggerOverlapBegin(class UPrimitiveComponent* Overlapped, 
 		AcppfpsCharacter* pc = (AcppfpsCharacter*)OtherActor;
 		FTransform dest_transform = endPortal->GetTransform();
 		dest_transform.AddToTranslation(pc->GetTransform().GetTranslation() - GetTransform().GetTranslation());
-		printFString("dest_transform = %s", *dest_transform.ToHumanReadableString());
-		pc->TeleportTo(dest_transform.GetTranslation(), dest_transform.GetRotation().Rotator());
+		//printFString("dest_transform = %s", *dest_transform.ToHumanReadableString());
+		pc->TeleportTo(dest_transform.GetTranslation(), FRotator(0,25,25));
+		pc->FaceRotation(FRotator(0, 25, 25));
+		pc->GetController()->GetParentComponent();//SetControlRotation(FRotator(0, 25, 25));
+		pc->UpdateComponentTransforms();
+		UMovementComponent* pc_move=pc->GetMovementComponent();
+		//pc_move->MoveUpdatedComponent(FVector(0,0,0), FRotator(0, 25, 25),false);
+		//	SetActorRelativeRotation(FRotator(0, 25, 25));
+		pc->doTilt();//SetActorRotation(FRotator(0, 25, 25));
+		//APlayerController* pc_controller=UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		//pc_controller->SetControlRotation(FRotator(0, 0, 0));
 	}
 
 }

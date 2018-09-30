@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "MotionControllerComponent.h"
 #include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
+#include "DubDebug.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -282,6 +283,11 @@ void AcppfpsCharacter::LookUpAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+}
+
+void AcppfpsCharacter::doTilt() {
+	auto x = GetController()->GetParentComponent();
+	printFString("bob %s", *(x->GetComponentRotation().ToString()));
 }
 
 bool AcppfpsCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerInputComponent)
