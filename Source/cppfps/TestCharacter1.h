@@ -13,7 +13,10 @@ class CPPFPS_API ATestCharacter1 : public ACharacter
 
 public:
 	// Sets default values for this character's properties
-	ATestCharacter1();
+	ATestCharacter1(const FObjectInitializer& ObjectInitializer);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UCameraComponent* FirstPersonCameraComponent;
 
 protected:
 	// Called when the game starts or when spawned
@@ -30,6 +33,6 @@ public:
 	void MoveForward(float amt);
 	void MoveRight(float amt);
 
-	void Jump();
+	//void Jump();
 	
 };
