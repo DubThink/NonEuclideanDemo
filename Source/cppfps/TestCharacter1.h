@@ -21,7 +21,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+	float xRot = 0;
+	float yRot = 0;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

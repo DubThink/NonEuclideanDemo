@@ -21,7 +21,7 @@ ABuiltPortal::ABuiltPortal()
 	BoxComponent->SetCollisionProfileName(TEXT("Trigger"));
 	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ABuiltPortal::OnTriggerOverlapBegin);
 
-	UStaticMeshComponent* SphereVisual = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualRepresentation"));
+	UStaticMeshComponent* SphereVisual = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualRepresentationSphere"));
 	SphereVisual->SetupAttachment(RootComponent);
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereVisualAsset(TEXT("/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere"));
 	if (SphereVisualAsset.Succeeded())
@@ -31,6 +31,18 @@ ABuiltPortal::ABuiltPortal()
 		SphereVisual->SetWorldScale3D(FVector(0.8f));
 	}
 	SphereVisual->SetCollisionProfileName(TEXT("NoCollision"));
+
+	UStaticMeshComponent* PlaneVisual = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualRepresentationPlane"));
+	PlaneVisual->SetupAttachment(RootComponent);
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> PlaneVisualAsset(TEXT("/Game/StarterContent/Shapes/Shape_Plane.Shape_Plane"));
+	if (PlaneVisualAsset.Succeeded())
+	{
+		PlaneVisual->SetStaticMesh(PlaneVisualAsset.Object);
+		//SphereVisual->SetRelativeLocation(FVector(0.0f, 0.0f, -40.0f));
+		PlaneVisual->SetRelativeRotation(FRotator(0.0f, 0.0f, 90.0f));
+		PlaneVisual->SetWorldScale3D(FVector(1.8f, 3.5f, 1.0f));
+	}
+	PlaneVisual->SetCollisionProfileName(TEXT("NoCollision"));
 }
 
 // Called when the game starts or when spawned
@@ -54,17 +66,39 @@ void ABuiltPortal::OnTriggerOverlapBegin(class UPrimitiveComponent* Overlapped, 
 		&& endPortal->IsValidLowLevel()) {
 		print("PC");
 		AcppfpsCharacter* pc = (AcppfpsCharacter*)OtherActor;
+		/* Don't teleport if already teleported this frame. */
+		if (pc->teleportedThisFrame)return;
+		pc->teleportedThisFrame = true;
 		FTransform dest_transform = endPortal->GetTransform();
-		dest_transform.AddToTranslation(pc->GetTransform().GetTranslation() - GetTransform().GetTranslation());
+		FVector enter_offset = pc->GetTransform().GetTranslation() - GetTransform().GetTranslation();
+		FRotator deltaRotation = GetActorRotation() - endPortal->GetActorRotation();
+		
+		dest_transform.AddToTranslation(deltaRotation.RotateVector(enter_offset));
+		
 		//printFString("dest_transform = %s", *dest_transform.ToHumanReadableString());
-		pc->TeleportTo(dest_transform.GetTranslation(), FRotator(0,25,25));
-		pc->FaceRotation(FRotator(0, 25, 25));
+		pc->TeleportTo(dest_transform.GetTranslation(), FRotator(0,0,0));
 		pc->GetController()->GetParentComponent();//SetControlRotation(FRotator(0, 25, 25));
 		pc->UpdateComponentTransforms();
-		UMovementComponent* pc_move=pc->GetMovementComponent();
+		//UMovementComponent* pc_move=pc->GetMovementComponent();
 		//pc_move->MoveUpdatedComponent(FVector(0,0,0), FRotator(0, 25, 25),false);
 		//	SetActorRelativeRotation(FRotator(0, 25, 25));
-		pc->doTilt();//SetActorRotation(FRotator(0, 25, 25));
+		pc->GetController()->SetControlRotation(
+			pc->GetController()->GetControlRotation() +deltaRotation);
+		//pc->GetMovementBaseActor()->SetVelocity()(pc->GetVelocity();
+		//print("TP old:");
+		//print(pc->GetVelocity().ToCompactString());
+		//print("TP new:");
+		//print(deltaRotation.RotateVector(pc->GetVelocity()).ToCompactString());
+		//print(deltaRotation.ToCompactString());
+
+		//pc->AddMovementInput(,1.0f,true);
+		((UCharacterMovementComponent*)(pc->GetMovementComponent()))->AddImpulse(
+			-pc->GetVelocity() + deltaRotation.RotateVector(pc->GetVelocity())
+		,true);
+		//	deltaRotation.GetInverse().RotateVector( -pc->GetVelocity() )//pc->GetVelocity())//
+		//);
+		pc->GetMovementComponent()->UpdateComponentVelocity();
+		//pc->doTilt();//SetActorRotation(FRotator(0, 25, 25));
 		//APlayerController* pc_controller=UGameplayStatics::GetPlayerController(GetWorld(), 0);
 		//pc_controller->SetControlRotation(FRotator(0, 0, 0));
 	}

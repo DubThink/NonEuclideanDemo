@@ -4,6 +4,7 @@
 #include "cppfpsProjectile.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/InputSettings.h"
@@ -286,8 +287,8 @@ void AcppfpsCharacter::LookUpAtRate(float Rate)
 }
 
 void AcppfpsCharacter::doTilt() {
-	auto x = GetController()->GetParentComponent();
-	printFString("bob %s", *(x->GetComponentRotation().ToString()));
+	//GetController()->SetControlRotation(GetController()->GetControlRotation()+FRotator();
+	//printFString("bob %s", *(x->GetComponentRotation().ToString()));
 }
 
 bool AcppfpsCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerInputComponent)
@@ -303,4 +304,12 @@ bool AcppfpsCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerIn
 	}
 	
 	return false;
+}
+
+// Called every frame
+void AcppfpsCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	teleportedThisFrame = false;
+	//print(GetVelocity().ToCompactString());
 }

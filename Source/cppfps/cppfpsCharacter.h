@@ -137,5 +137,7 @@ public:
 	/** Returns FirstPersonCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 	void doTilt();
+	bool teleportedThisFrame = false;
+	void Tick(float DeltaTime);
 };
 

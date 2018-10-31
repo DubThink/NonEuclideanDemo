@@ -4,6 +4,7 @@
 #include "DubDebug.h"
 #include "GameFramework/PhysicsVolume.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/Controller.h"
 #include "EscherCharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
 
@@ -24,17 +25,20 @@ ATestCharacter1::ATestCharacter1(const FObjectInitializer& ObjectInitializer)
 void ATestCharacter1::BeginPlay()
 {
 	Super::BeginPlay();
-	SetActorRotation(FRotator(0, 45, 0));
+	//this->bUseControllerRotationPitch
+	//SetActorRotation(FRotator(0, 45, 0));
 }
 
 // Called every frame
 void ATestCharacter1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	auto a = GetOwner();
+	//auto a = GetOwner();
+	GetController()->SetControlRotation(FRotator(50, 0, 0));
+	
 	//AddMovementInput(FVector(-1.0f,0.0f,1.0f), 1.0f);
 	//AddActorWorldRotation(FQuat(GetActorUpVector(), 0.001f));
-	print(GetActorUpVector().ToCompactString());
+	//print(GetActorUpVector().ToCompactString());
 	//print("AAA");
 	//AddActorLocalRotation(FRotator(0, 0.2f, 0));
 	//BaseRotationOffset
@@ -56,18 +60,25 @@ void ATestCharacter1::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 void ATestCharacter1::testPitch(float d) {
 	//print(FString::Printf(TEXT("Test pitch=%f"), d));
-	FirstPersonCameraComponent->AddLocalRotation(FRotator(-d, 0, 0));
+	yRot += d;
+	//FirstPersonCameraComponent->AddLocalRotation(FRotator(-d, 0, 0));
 }
 
 void ATestCharacter1::testYaw(float d) {
 	//print(FString::Printf(TEXT("Test yaw=%d"), d));
 	//auto x = FQuat(GetActorUpVector(), d*DEG_TO_RAD);
-	auto x = FQuat(FRotator(0,d,0));
+	//auto x = FQuat(FRotator(0,d,0));
 	/*print(x.GetAxisX().ToCompactString());
 	print(x.GetAxisY().ToCompactString());
 	print(x.GetAxisZ().ToCompactString());*/
-	FRotator rotator = FRotator(0, 20, 0);
+	//FRotator rotator = FRotator(0, 20, 0);
 	//SetActorRotation(rotator);
+	xRot += d;
+	//FirstPersonCameraComponent->SetRelativeRotation(FRotator(-yRot, xRot, 0));
+	//FRotator rot=FirstPersonCameraComponent
+	//FirstPersonCameraComponent->SetRelativeLocationAndRotation(
+	//	FVector(0,0,0),
+	//	FRotator(-d, 0, 0));
 
 }
 void ATestCharacter1::MoveForward(float amt) {
@@ -84,8 +95,21 @@ void ATestCharacter1::MoveForward(float amt) {
 void ATestCharacter1::MoveRight(float amt) {
 	if (amt != 0.0f)
 	{
+		print(FString::Printf(TEXT("amt=%.6f"), amt));
+		if (amt > 0) {
+			Controller->SetControlRotation(FRotator(45, 45, 0));
+			print("setting rot");
+		}
+		else {
+			//SetActorRotation(FRotator(0, 0, 0));
+			//SetActorRotation(FRotator(50, 0, 0));
+			Controller->SetControlRotation(FRotator(0, 0, 0));
+
+			print("clearing rot ");
+		}
 		// add movement in that direction
-		AddMovementInput(GetActorUpVector(), amt);
+		//AddMovementInput(GetActorUpVector(), amt);
+
 
 	}
 	//print(FString::Printf(TEXT("Test right=%f"), amt));
