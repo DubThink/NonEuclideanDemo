@@ -71,8 +71,10 @@ void ABuiltPortal::OnTriggerOverlapBegin(class UPrimitiveComponent* Overlapped, 
 		pc->teleportedThisFrame = true;
 		FTransform dest_transform = endPortal->GetTransform();
 		FVector enter_offset = pc->GetTransform().GetTranslation() - GetTransform().GetTranslation();
-		FRotator deltaRotation = GetActorRotation() - endPortal->GetActorRotation();
-		
+		FRotator deltaRotation = FRotator(0, 180, 0) - (GetActorRotation() - endPortal->GetActorRotation());
+		deltaRotation.Roll = 0;
+		deltaRotation.Pitch = 0;
+
 		dest_transform.AddToTranslation(deltaRotation.RotateVector(enter_offset));
 		
 		//printFString("dest_transform = %s", *dest_transform.ToHumanReadableString());
