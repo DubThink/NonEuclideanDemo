@@ -72,11 +72,13 @@ void ABuiltPortal::OnTriggerOverlapBegin(class UPrimitiveComponent* Overlapped, 
 		FTransform dest_transform = endPortal->GetTransform();
 		FVector enter_offset = pc->GetTransform().GetTranslation() - GetTransform().GetTranslation();
 		FRotator deltaRotation = FRotator(0, 180, 0) - (GetActorRotation() - endPortal->GetActorRotation());
-		deltaRotation.Roll = 0;
-		deltaRotation.Pitch = 0;
 
 		dest_transform.AddToTranslation(deltaRotation.RotateVector(enter_offset));
 		
+		((UCharacterMovementComponent*)(pc->GetMovementComponent()))->AddImpulse(
+			-pc->GetVelocity() + deltaRotation.RotateVector(pc->GetVelocity())
+			, true);
+		pc->GetMovementComponent()->UpdateComponentVelocity();
 		//printFString("dest_transform = %s", *dest_transform.ToHumanReadableString());
 		pc->TeleportTo(dest_transform.GetTranslation(), FRotator(0,0,0));
 		pc->GetController()->GetParentComponent();//SetControlRotation(FRotator(0, 25, 25));
@@ -84,6 +86,9 @@ void ABuiltPortal::OnTriggerOverlapBegin(class UPrimitiveComponent* Overlapped, 
 		//UMovementComponent* pc_move=pc->GetMovementComponent();
 		//pc_move->MoveUpdatedComponent(FVector(0,0,0), FRotator(0, 25, 25),false);
 		//	SetActorRelativeRotation(FRotator(0, 25, 25));
+		deltaRotation.Roll = 0;
+		deltaRotation.Pitch = 0;
+
 		pc->GetController()->SetControlRotation(
 			pc->GetController()->GetControlRotation() +deltaRotation);
 		//pc->GetMovementBaseActor()->SetVelocity()(pc->GetVelocity();
@@ -94,12 +99,9 @@ void ABuiltPortal::OnTriggerOverlapBegin(class UPrimitiveComponent* Overlapped, 
 		//print(deltaRotation.ToCompactString());
 
 		//pc->AddMovementInput(,1.0f,true);
-		((UCharacterMovementComponent*)(pc->GetMovementComponent()))->AddImpulse(
-			-pc->GetVelocity() + deltaRotation.RotateVector(pc->GetVelocity())
-		,true);
+
 		//	deltaRotation.GetInverse().RotateVector( -pc->GetVelocity() )//pc->GetVelocity())//
 		//);
-		pc->GetMovementComponent()->UpdateComponentVelocity();
 		//pc->doTilt();//SetActorRotation(FRotator(0, 25, 25));
 		//APlayerController* pc_controller=UGameplayStatics::GetPlayerController(GetWorld(), 0);
 		//pc_controller->SetControlRotation(FRotator(0, 0, 0));
