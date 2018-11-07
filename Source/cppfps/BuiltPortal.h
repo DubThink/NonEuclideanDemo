@@ -20,6 +20,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	UMaterial* baseMaterial;
 
 public:	
 	// Called every frame
@@ -30,4 +31,13 @@ public:
 	void OnTriggerOverlapBegin(class UPrimitiveComponent* Overlapped, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 	UPROPERTY(EditAnywhere)
 	class ABuiltPortal* endPortal;
+	// eventually make private - public for debugging
+	UPROPERTY(EditAnywhere)
+	UStaticMeshComponent* PlaneVisual;
+	UPROPERTY(EditAnywhere)
+	class USceneCaptureComponent2D* portalCaptureComponent;
+	UPROPERTY(EditAnywhere)
+	class UTextureRenderTarget2D* portalRenderTarget;
+	UPROPERTY(EditAnywhere)
+	UMaterialInstanceDynamic* portalDynamicMaterial;
 };

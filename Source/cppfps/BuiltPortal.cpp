@@ -6,12 +6,20 @@
 #include "Components/BoxComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+
+// visuals
+#include "Components/SceneCaptureComponent2D.h"
+#include "Engine/TextureRenderTarget2D.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "UObject/ConstructorHelpers.h"
+
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
 #include "cppfpsCharacter.h"
 #include "cppfpsProjectile.h"
 #include "DubDebug.h"
+
 // Sets default values
 ABuiltPortal::ABuiltPortal()
 {
@@ -35,7 +43,7 @@ ABuiltPortal::ABuiltPortal()
 	}
 	SphereVisual->SetCollisionProfileName(TEXT("NoCollision"));
 
-	UStaticMeshComponent* PlaneVisual = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualRepresentationPlane"));
+	PlaneVisual = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualRepresentationPlane"));
 	PlaneVisual->SetupAttachment(RootComponent);
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> PlaneVisualAsset(TEXT("/Game/StarterContent/Shapes/Shape_Plane.Shape_Plane"));
 	if (PlaneVisualAsset.Succeeded())
@@ -46,13 +54,29 @@ ABuiltPortal::ABuiltPortal()
 		PlaneVisual->SetWorldScale3D(FVector(1.8f, 3.5f, 1.0f));
 	}
 	PlaneVisual->SetCollisionProfileName(TEXT("NoCollision"));
+
+	// ------ Rendering
+	portalCaptureComponent= CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("captureComponent"));
+	// Even though it's marked private in c++, it's a UPROPERTY so it's public
+	portalCaptureComponent->bCaptureEveryFrame = true;
+	portalCaptureComponent->SetupAttachment(RootComponent);
+	portalRenderTarget = CreateDefaultSubobject<UTextureRenderTarget2D>(TEXT("portalRenderTarget"));
+	portalRenderTarget->InitAutoFormat(1024, 1024);
+	// Even though it's marked private in c++, it's a UPROPERTY so it's public
+	portalCaptureComponent->TextureTarget = portalRenderTarget;
+	
+	static ConstructorHelpers::FObjectFinder<UMaterial> BaseMaterial(TEXT("/Game/PortalMaterial.PortalMaterial"));
+	baseMaterial = BaseMaterial.Object;
 }
 
 // Called when the game starts or when spawned
 void ABuiltPortal::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	portalDynamicMaterial = PlaneVisual->CreateAndSetMaterialInstanceDynamicFromMaterial(0,baseMaterial);
+	PlaneVisual->SetMaterial(0, portalDynamicMaterial);
+	portalDynamicMaterial->SetTextureParameterValue("PortalTexture", portalRenderTarget);
 }
 
 // Called every frame
