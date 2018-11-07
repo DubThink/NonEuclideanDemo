@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Teleportable.h"
 #include "cppfpsProjectile.generated.h"
 
 UCLASS(config=Game)
-class AcppfpsProjectile : public AActor
+class AcppfpsProjectile : public AActor, public ITeleportable
 {
 	GENERATED_BODY()
 

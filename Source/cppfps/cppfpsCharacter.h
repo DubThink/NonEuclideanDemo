@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Teleportable.h"
 #include "cppfpsCharacter.generated.h"
 
 class UInputComponent;
 
 UCLASS(config=Game)
-class AcppfpsCharacter : public ACharacter
+class AcppfpsCharacter : public ACharacter, public ITeleportable
 {
 	GENERATED_BODY()
 
@@ -137,7 +138,6 @@ public:
 	/** Returns FirstPersonCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 	void doTilt();
-	bool teleportedThisFrame = false;
 	void Tick(float DeltaTime);
 };
 

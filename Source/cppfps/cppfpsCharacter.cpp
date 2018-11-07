@@ -310,6 +310,6 @@ bool AcppfpsCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerIn
 void AcppfpsCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	teleportedThisFrame = false;
+
 	//print(GetVelocity().ToCompactString());
 }
