@@ -12,6 +12,7 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Runtime/Engine/Classes/Kismet/KismetRenderingLibrary.h"
 
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
@@ -60,10 +61,8 @@ ABuiltPortal::ABuiltPortal()
 	// Even though it's marked private in c++, it's a UPROPERTY so it's public
 	portalCaptureComponent->bCaptureEveryFrame = true;
 	portalCaptureComponent->SetupAttachment(RootComponent);
-	portalRenderTarget = CreateDefaultSubobject<UTextureRenderTarget2D>(TEXT("portalRenderTarget"));
-	portalRenderTarget->InitAutoFormat(1024, 1024);
+	//portalRenderTarget = CreateDefaultSubobject<UTextureRenderTarget2D>(TEXT("PZQQQ"));// UKismetRenderingLibrary::CreateRenderTarget2D(this, 1024, 1024);
 	// Even though it's marked private in c++, it's a UPROPERTY so it's public
-	portalCaptureComponent->TextureTarget = portalRenderTarget;
 	
 	static ConstructorHelpers::FObjectFinder<UMaterial> BaseMaterial(TEXT("/Game/PortalMaterial.PortalMaterial"));
 	baseMaterial = BaseMaterial.Object;
@@ -73,7 +72,8 @@ ABuiltPortal::ABuiltPortal()
 void ABuiltPortal::BeginPlay()
 {
 	Super::BeginPlay();
-
+	portalRenderTarget = UKismetRenderingLibrary::CreateRenderTarget2D(this, 1024, 1024);
+	portalCaptureComponent->TextureTarget = portalRenderTarget;
 	portalDynamicMaterial = PlaneVisual->CreateAndSetMaterialInstanceDynamicFromMaterial(0,baseMaterial);
 	PlaneVisual->SetMaterial(0, portalDynamicMaterial);
 	portalDynamicMaterial->SetTextureParameterValue("PortalTexture", portalRenderTarget);
