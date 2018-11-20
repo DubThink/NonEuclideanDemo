@@ -309,7 +309,8 @@ bool AcppfpsCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerIn
 // Called every frame
 void AcppfpsCharacter::Tick(float DeltaTime)
 {
+	//AddControllerYawInput(1);
 	Super::Tick(DeltaTime);
-
+	Controller->Tick(DeltaTime);
 	//print(GetVelocity().ToCompactString());
 }

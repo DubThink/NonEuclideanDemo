@@ -13,6 +13,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Runtime/Engine/Classes/Kismet/KismetRenderingLibrary.h"
+#include "Runtime/Engine/Classes/Engine/Engine.h"
 
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
@@ -72,21 +73,59 @@ ABuiltPortal::ABuiltPortal()
 void ABuiltPortal::BeginPlay()
 {
 	Super::BeginPlay();
-	portalRenderTarget = UKismetRenderingLibrary::CreateRenderTarget2D(this, 1024, 1024);
+	AddTickPrerequisiteActor(GEngine->GetFirstLocalPlayerController(GetWorld())->GetParentActor());
+	AddTickPrerequisiteComponent(GEngine->GetFirstLocalPlayerController(GetWorld())->GetParentComponent());
+	FVector2D ViewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
+	portalRenderTarget = UKismetRenderingLibrary::CreateRenderTarget2D(this, ViewportSize.X,ViewportSize.Y);
 	portalCaptureComponent->TextureTarget = portalRenderTarget;
 	portalDynamicMaterial = PlaneVisual->CreateAndSetMaterialInstanceDynamicFromMaterial(0,baseMaterial);
 	PlaneVisual->SetMaterial(0, portalDynamicMaterial);
 	portalDynamicMaterial->SetTextureParameterValue("PortalTexture", portalRenderTarget);
+	portalCaptureComponent->SetCaptureSortPriority(10000);
+	portalCaptureComponent->bCaptureEveryFrame = false;
+}
+
+
+FVector ABuiltPortal::LocationToExitSpace(FVector v)
+{
+	if (!endPortal->IsValidLowLevel())
+		return FVector();
+	FTransform dest_transform = endPortal->GetTransform();
+	FVector enter_offset = v - GetTransform().GetTranslation();
+	/* get rotation between normal of this portal and out portal */
+	/* add rotated offset to dest transform to get new position */
+	dest_transform.AddToTranslation(DeltaRotation().RotateVector(enter_offset));
+	return dest_transform.GetTranslation();
+}
+
+FRotator ABuiltPortal::RotationToExitSpace(FRotator r)
+{
+	if (!endPortal->IsValidLowLevel())
+		return FRotator();
+	return DeltaRotation() + r;
+}
+
+FRotator ABuiltPortal::DeltaRotation()
+{
+	if (!endPortal->IsValidLowLevel())
+		return FRotator();
+	return FRotator(0, 180, 0) - (GetActorRotation() - endPortal->GetActorRotation());
 }
 
 // Called every frame
 void ABuiltPortal::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	APlayerCameraManager* playerCam=GEngine->GetFirstLocalPlayerController(GetWorld())->PlayerCameraManager;
+	/* dirty trick to update the camera's position before it normally is updated (which is post actor ticks) */
+	playerCam->UpdateCamera(0);
+	portalCaptureComponent->SetWorldLocation(LocationToExitSpace(playerCam->GetCameraLocation()));
+	portalCaptureComponent->SetWorldRotation(RotationToExitSpace(playerCam->GetCameraRotation()));
+	//portalCaptureComponent->MarkRenderStateDirty();
+	//portalCaptureComponent->CaptureScene();
 }
-#define DEBUG_PORTAL
 
+#define DEBUG_PORTAL
 void ABuiltPortal::OnTriggerOverlapBegin(class UPrimitiveComponent* Overlapped, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult) {
 #ifdef DEBUG_PORTAL
 	printFString("Me = %s", *GetName());
@@ -105,26 +144,16 @@ void ABuiltPortal::OnTriggerOverlapBegin(class UPrimitiveComponent* Overlapped, 
 		return;
 	}
 	teleportable->exitPortal = endPortal;
-
-	FTransform dest_transform = endPortal->GetTransform();
-	FVector enter_offset = OtherActor->GetTransform().GetTranslation() - GetTransform().GetTranslation();
-
-	/* get rotation between normal of this portal and out portal */
-	FRotator deltaRotation = FRotator(0, 180, 0) - (GetActorRotation() - endPortal->GetActorRotation());
-
-	/* add rotated offset to dest transform to get new player position */
-	dest_transform.AddToTranslation(deltaRotation.RotateVector(enter_offset));
-
-	OtherActor->TeleportTo(dest_transform.GetTranslation(), FRotator(0, 0, 0));
+	OtherActor->TeleportTo(LocationToExitSpace(OtherActor->GetActorLocation()), FRotator(0, 0, 0));
 	OtherActor->UpdateComponentTransforms();
-	//OtherActor->GetMove()->ComponentVelocity = deltaRotation.RotateVector(OtherActor->GetVelocity());
+	
 	// --------------------------------- if other object is player ---------------------------------
 	if (OtherActor->GetClass()->IsChildOf(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->GetClass())) {
 #ifdef DEBUG_PORTAL
 		print("PC");
 #endif // DEBUG_PORTAL
 		AcppfpsCharacter* pc = (AcppfpsCharacter*)OtherActor;
-
+		FRotator deltaRotation = DeltaRotation();
 		/* negate current velocity and new rotated velocity */
 		((UCharacterMovementComponent*)(pc->GetMovementComponent()))->AddImpulse(
 			-pc->GetVelocity() + deltaRotation.RotateVector(pc->GetVelocity())
@@ -149,7 +178,7 @@ void ABuiltPortal::OnTriggerOverlapBegin(class UPrimitiveComponent* Overlapped, 
 		// while velocity is not marked as a public variable in the c++ code, it is a UProperty,
 		// and as such, is marked public by unreal's preprocessor.
 		// It's acceptable to access it here, as it's designed to be accessable in blueprints
-		p->GetProjectileMovement()->Velocity = deltaRotation.RotateVector(p->GetVelocity());
+		p->GetProjectileMovement()->Velocity = DeltaRotation().RotateVector(p->GetVelocity());
 	}
 }
 

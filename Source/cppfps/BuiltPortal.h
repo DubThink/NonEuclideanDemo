@@ -22,6 +22,9 @@ protected:
 	virtual void BeginPlay() override;
 	UMaterial* baseMaterial;
 
+	FVector LocationToExitSpace(FVector v);
+	FRotator RotationToExitSpace(FRotator r);
+	FRotator DeltaRotation();
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
